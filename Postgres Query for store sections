@@ -1,0 +1,58 @@
+-- Update categories table
+CREATE TABLE IF NOT EXISTS public.categories
+(
+    id integer NOT NULL DEFAULT nextval('categories_id_seq'::regclass),
+    name character varying(255) COLLATE pg_catalog."default" NOT NULL,
+    image character varying(255) COLLATE pg_catalog."default" NOT NULL,
+    store_id integer NOT NULL,
+    deleted boolean,
+    CONSTRAINT categories_pkey PRIMARY KEY (id),
+    CONSTRAINT categories_store_id_fkey FOREIGN KEY (store_id)
+    REFERENCES public.stores (id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION
+);
+
+-- Update products table
+CREATE TABLE IF NOT EXISTS public.products
+(
+    id integer NOT NULL DEFAULT nextval('products_id_seq'::regclass),
+    name character varying(255) COLLATE pg_catalog."default" NOT NULL,
+    image character varying(255) COLLATE pg_catalog."default" NOT NULL,
+    price integer NOT NULL,
+    category_id integer NOT NULL,
+    deleted boolean,
+    CONSTRAINT products_pkey PRIMARY KEY (id),
+    CONSTRAINT products_category_id_fkey FOREIGN KEY (category_id)
+    REFERENCES public.categories (id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION
+);
+
+-- Update stores table
+CREATE TABLE IF NOT EXISTS public.stores
+(
+    id integer NOT NULL DEFAULT nextval('stores_id_seq'::regclass),
+    name character varying(255) COLLATE pg_catalog."default" NOT NULL,
+    logo character varying COLLATE pg_catalog."default" NOT NULL,
+    description character varying(255) COLLATE pg_catalog."default",
+    deleted boolean DEFAULT false,
+    CONSTRAINT stores_pkey PRIMARY KEY (id)
+);
+
+-- Drop the old foreign key constraints
+ALTER TABLE IF EXISTS public.categories DROP CONSTRAINT IF EXISTS categories_store_id_fkey;
+ALTER TABLE IF EXISTS public.products DROP CONSTRAINT IF EXISTS products_category_id_fkey;
+
+-- Add new foreign key constraints with updated column names
+ALTER TABLE IF EXISTS public.categories
+    ADD CONSTRAINT categories_store_id_fkey FOREIGN KEY (store_id)
+    REFERENCES public.stores (id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION;
+
+ALTER TABLE IF EXISTS public.products
+    ADD CONSTRAINT products_category_id_fkey FOREIGN KEY (category_id)
+    REFERENCES public.categories (id) MATCH SIMPLE
+    ON UPDATE NO ACTION
+    ON DELETE NO ACTION;
